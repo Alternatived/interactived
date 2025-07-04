@@ -22,9 +22,10 @@ function setup() {
 function draw() {
   background(0);
 
-  let strength = 150;
-  let radius = 200;
+  let maxDist = 200;
+  let maxOffset = 20;
 
+  // Update grid points based on mouse distortion
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
       let baseX = i * spacing;
@@ -35,22 +36,25 @@ function draw() {
       let dist = sqrt(dx * dx + dy * dy);
 
       let offset = 0;
-
-      if (dist < radius) {
-        let effect = (radius - dist) / radius;
-        offset = effect * strength;
+      if (dist < maxDist) {
+        let effect = (maxDist - dist) / maxDist;
+        offset = effect * maxOffset;
       }
 
+      // Direction vector pointing away from mouse
       let dir = createVector(dx, dy).normalize().mult(offset);
-      let targetX = baseX - dir.x;
-      let targetY = baseY - dir.y * 0.6; // squish vertically for 3D illusion
 
+      // Apply vertical squish for 3D illusion
+      let targetX = baseX - dir.x;
+      let targetY = baseY - dir.y * 0.6;
+
+      // Smooth lerp for animation
       grid[i][j].x = lerp(grid[i][j].x, targetX, 0.15);
       grid[i][j].y = lerp(grid[i][j].y, targetY, 0.15);
     }
   }
 
-  // Draw horizontal lines
+  // Draw lines horizontally
   for (let j = 0; j <= rows; j++) {
     beginShape();
     for (let i = 0; i <= cols; i++) {
@@ -59,12 +63,20 @@ function draw() {
     endShape();
   }
 
-  // Draw vertical lines
+  // Draw lines vertically
   for (let i = 0; i <= cols; i++) {
     beginShape();
     for (let j = 0; j <= rows; j++) {
       vertex(grid[i][j].x, grid[i][j].y);
     }
     endShape();
+  }
+
+  // Draw points on top for crisp dots
+  strokeWeight(3);
+  for (let i = 0; i <= cols; i++) {
+    for (let j = 0; j <= rows; j++) {
+      point(grid[i][j].x, grid[i][j].y);
+    }
   }
 }
