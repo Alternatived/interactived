@@ -1,75 +1,38 @@
 let cols, rows;
-let spacing = 40;
-let grid = [];
+let spacing = 30;
+let depthScale = 50;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  stroke(0, 255, 0, 200);
-  noFill();
-  cols = floor(width / spacing);
-  rows = floor(height / spacing);
-
-  for (let i = 0; i <= cols; i++) {
-    grid[i] = [];
-    for (let j = 0; j <= rows; j++) {
-      let x = i * spacing;
-      let y = j * spacing;
-      grid[i][j] = createVector(x, y);
-    }
-  }
+  createCanvas(windowWidth, windowHeight, WEBGL);
+  cols = 60;
+  rows = 60;
+  frameRate(60);
 }
 
 function draw() {
-  background(0, 40); // Slight trail effect
+  background(0);
+  rotateX(PI / 3);
+  rotateZ(map(mouseX, 0, width, -PI, PI) * 0.1);
+  translate(-cols * spacing / 2, -rows * spacing / 2, 0);
 
-  let t = millis() * 0.001;
-
-  for (let i = 0; i <= cols; i++) {
-    for (let j = 0; j <= rows; j++) {
-      let baseX = i * spacing;
-      let baseY = j * spacing;
-
-      // Add wave oscillation
-      let waveX = sin(t + j * 0.3) * 5;
-      let waveY = cos(t + i * 0.3) * 5;
-
-      let dx = mouseX - baseX;
-      let dy = mouseY - baseY;
-      let distSq = dx * dx + dy * dy;
-
-      let maxDist = 250 * 250;
-      let strength = map(constrain(distSq, 0, maxDist), 0, maxDist, 30, 0);
-
-      let angle = atan2(dy, dx);
-      let pushX = cos(angle) * strength;
-      let pushY = sin(angle) * strength;
-
-      let targetX = baseX + waveX + pushX;
-      let targetY = baseY + waveY + pushY;
-
-      grid[i][j].x = lerp(grid[i][j].x, targetX, 0.15);
-      grid[i][j].y = lerp(grid[i][j].y, targetY, 0.15);
-    }
-  }
-
-  // Draw grid lines
-  stroke(0, 255, 0, 200);
+  stroke(0, 255, 0);
   strokeWeight(1);
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      let p1 = grid[i][j];
-      let p2 = grid[i + 1][j];
-      let p3 = grid[i][j + 1];
-      line(p1.x, p1.y, p2.x, p2.y);
-      line(p1.x, p1.y, p3.x, p3.y);
-    }
-  }
+  noFill();
 
-  // Draw dots over grid points
-  strokeWeight(2);
-  for (let i = 0; i <= cols; i++) {
-    for (let j = 0; j <= rows; j++) {
-      point(grid[i][j].x, grid[i][j].y);
+  let t = millis() * 0.002;
+
+  for (let y = 0; y < rows - 1; y++) {
+    beginShape(TRIANGLE_STRIP);
+    for (let x = 0; x < cols; x++) {
+      let xPos = x * spacing;
+      let yPos = y * spacing;
+
+      let z1 = sin(t + x * 0.2 + y * 0.3) * depthScale;
+      let z2 = sin(t + x * 0.2 + (y + 1) * 0.3) * depthScale;
+
+      vertex(xPos, yPos, z1);
+      vertex(xPos, yPos + spacing, z2);
     }
+    endShape();
   }
 }
