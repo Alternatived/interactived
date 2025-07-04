@@ -25,7 +25,7 @@ function draw() {
   let maxDist = 200;
   let maxPull = 30;
 
-  // Update positions
+  // Update grid positions
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
       let baseX = i * spacing;
@@ -54,7 +54,7 @@ function draw() {
     }
   }
 
-  // 🔥 Glow cells near mouse
+  // ⚡️ Glitchy random glow squares
   noStroke();
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
@@ -65,10 +65,15 @@ function draw() {
 
       let cx = (p1.x + p3.x) / 2;
       let cy = (p1.y + p3.y) / 2;
+
       let d = dist(mouseX, mouseY, cx, cy);
 
-      if (d < maxDist) {
-        let alpha = map(d, 0, maxDist, 180, 0);
+      // Add jitter and randomness
+      let n = noise(cx * 0.01, cy * 0.01, time) * 2;
+      let r = random(-20, 20); // spark-like
+      let alpha = map(d + r + n * 20, 0, maxDist, 255, 0, true);
+
+      if (alpha > 20) {
         fill(0, 255, 0, alpha);
         beginShape();
         vertex(p1.x, p1.y);
