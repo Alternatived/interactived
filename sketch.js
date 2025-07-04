@@ -1,5 +1,6 @@
 let cols, rows;
 let spacing = 40;
+let wave = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -7,6 +8,13 @@ function setup() {
   noFill();
   cols = floor(width / spacing);
   rows = floor(height / spacing);
+
+  for (let i = 0; i <= cols; i++) {
+    wave[i] = [];
+    for (let j = 0; j <= rows; j++) {
+      wave[i][j] = createVector(i * spacing, j * spacing);
+    }
+  }
 }
 
 function draw() {
@@ -14,26 +22,27 @@ function draw() {
 
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
-      let x = i * spacing;
-      let y = j * spacing;
+      let baseX = i * spacing;
+      let baseY = j * spacing;
 
-      let dx = mouseX - x;
-      let dy = mouseY - y;
+      let dx = mouseX - baseX;
+      let dy = mouseY - baseY;
       let distSq = dx * dx + dy * dy;
 
       let maxDist = 300 * 300;
-      let distortion = map(constrain(distSq, 0, maxDist), 0, maxDist, 15, 0);
+      let angle = atan2(dy, dx);
+      let strength = map(constrain(distSq, 0, maxDist), 0, maxDist, 20, 0);
 
-      let offsetX = dx / sqrt(distSq + 1) * distortion;
-      let offsetY = dy / sqrt(distSq + 1) * distortion;
+      let offsetX = cos(angle) * strength;
+      let offsetY = sin(angle) * strength;
 
-      ellipse(x + offsetX, y + offsetY, 2);
+      let x = baseX + offsetX;
+      let y = baseY + offsetY;
+
+      wave[i][j].x = lerp(wave[i][j].x, x, 0.1);
+      wave[i][j].y = lerp(wave[i][j].y, y, 0.1);
+
+      ellipse(wave[i][j].x, wave[i][j].y, 2);
     }
   }
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  cols = floor(width / spacing);
-  rows = floor(height / spacing);
 }
