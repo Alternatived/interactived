@@ -1,48 +1,75 @@
 let cols, rows;
 let spacing = 40;
-let wave = [];
+let grid = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  stroke(0, 255, 0);
+  stroke(0, 255, 0, 200);
   noFill();
   cols = floor(width / spacing);
   rows = floor(height / spacing);
 
   for (let i = 0; i <= cols; i++) {
-    wave[i] = [];
+    grid[i] = [];
     for (let j = 0; j <= rows; j++) {
-      wave[i][j] = createVector(i * spacing, j * spacing);
+      let x = i * spacing;
+      let y = j * spacing;
+      grid[i][j] = createVector(x, y);
     }
   }
 }
 
 function draw() {
-  background(0);
+  background(0, 40); // Slight trail effect
+
+  let t = millis() * 0.001;
 
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
       let baseX = i * spacing;
       let baseY = j * spacing;
 
+      // Add wave oscillation
+      let waveX = sin(t + j * 0.3) * 5;
+      let waveY = cos(t + i * 0.3) * 5;
+
       let dx = mouseX - baseX;
       let dy = mouseY - baseY;
       let distSq = dx * dx + dy * dy;
 
-      let maxDist = 300 * 300;
+      let maxDist = 250 * 250;
+      let strength = map(constrain(distSq, 0, maxDist), 0, maxDist, 30, 0);
+
       let angle = atan2(dy, dx);
-      let strength = map(constrain(distSq, 0, maxDist), 0, maxDist, 20, 0);
+      let pushX = cos(angle) * strength;
+      let pushY = sin(angle) * strength;
 
-      let offsetX = cos(angle) * strength;
-      let offsetY = sin(angle) * strength;
+      let targetX = baseX + waveX + pushX;
+      let targetY = baseY + waveY + pushY;
 
-      let x = baseX + offsetX;
-      let y = baseY + offsetY;
+      grid[i][j].x = lerp(grid[i][j].x, targetX, 0.15);
+      grid[i][j].y = lerp(grid[i][j].y, targetY, 0.15);
+    }
+  }
 
-      wave[i][j].x = lerp(wave[i][j].x, x, 0.1);
-      wave[i][j].y = lerp(wave[i][j].y, y, 0.1);
+  // Draw grid lines
+  stroke(0, 255, 0, 200);
+  strokeWeight(1);
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let p1 = grid[i][j];
+      let p2 = grid[i + 1][j];
+      let p3 = grid[i][j + 1];
+      line(p1.x, p1.y, p2.x, p2.y);
+      line(p1.x, p1.y, p3.x, p3.y);
+    }
+  }
 
-      ellipse(wave[i][j].x, wave[i][j].y, 2);
+  // Draw dots over grid points
+  strokeWeight(2);
+  for (let i = 0; i <= cols; i++) {
+    for (let j = 0; j <= rows; j++) {
+      point(grid[i][j].x, grid[i][j].y);
     }
   }
 }
